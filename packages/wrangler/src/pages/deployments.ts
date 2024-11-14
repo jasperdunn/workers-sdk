@@ -23,10 +23,16 @@ export function ListOptions(yargs: CommonYargsArgv) {
 			description:
 				"The name of the project you would like to list deployments for",
 		},
+		environment: {
+			type: "string",
+			choices: ["production", "preview"],
+			description:
+				"Environment type to list deployments for",
+		},
 	});
 }
 
-export async function ListHandler({ projectName }: ListArgs) {
+export async function ListHandler({ projectName, environment }: ListArgs) {
 	const config = getConfigCache<PagesConfigCache>(PAGES_CONFIG_CACHE_FILENAME);
 	const accountId = await requireAuth(config);
 
@@ -42,7 +48,9 @@ export async function ListHandler({ projectName }: ListArgs) {
 	}
 
 	const deployments: Array<Deployment> = await fetchResult(
-		`/accounts/${accountId}/pages/projects/${projectName}/deployments`
+		`/accounts/${accountId}/pages/projects/${projectName}/deployments`,
+		{},
+		environment ? new URLSearchParams({ env: environment }) : new URLSearchParams({}),
 	);
 
 	const titleCase = (word: string) =>
